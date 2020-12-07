@@ -19,7 +19,11 @@ public class MainTrain {
 				"var x = 4",
 				"x = 3",
 				"x = bind maxX",
-				"var y = 3+4/5"
+				"var y = 3+4/5",
+				"while x+1 < y {",
+				"x = x+1",
+				"}",
+				"y = 5"
 		};
 		MyInterpreter.interpret(test);
 		

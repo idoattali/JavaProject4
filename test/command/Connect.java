@@ -18,9 +18,4 @@ public class Connect extends ExecutableCommand {
         }
         return 0;
     }
-
-    public static ExecutableCommand CreateObject(ArrayList<String> arguments)
-    {
-        return new Connect(arguments);
-    }
 }

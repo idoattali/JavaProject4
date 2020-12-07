@@ -6,10 +6,10 @@ import java.util.*;
 import java.util.function.Function;
 
 public class LinesScanner {
-    private String[] _lines;
+    private ArrayList<String> _lines;
     private HashMap<String, Function<ArrayList<String>, ExecutableCommand>> _knownExecutableCommands;
     private HashMap<String, Function<ArrayList<String>, ExecutableCommand>> _knownPlacementCommands;
-    private HashSet<String> _knownConditionalCommands;
+    private HashMap<String, Function<ConditionalCommand, ContainerCommand>> _knownContainerCommands;
 
     private void InitializeKnownExecutableCommands()
     {
@@ -26,13 +26,13 @@ public class LinesScanner {
 
     private void InitializeKnownConditionalCommands()
     {
-        _knownConditionalCommands = new HashSet<>();
-        _knownConditionalCommands.add("while");
+        _knownContainerCommands = new HashMap<>();
+        _knownContainerCommands.put("while", (args) -> new WhileCommand(args));
     }
 
     public LinesScanner(String[] lines)
     {
-        _lines = lines;
+        _lines = new ArrayList<>(Arrays.asList(lines));
         InitializeKnownExecutableCommands();
         InitializeKnownConditionalCommands();
         InitializeKnownPlacementCommands();
@@ -80,32 +80,88 @@ public class LinesScanner {
                 : new ExistsPlacementCommand(assignedTo, internalCommand);
     }
 
+    private ContainerCommand GetContainerCommand(String firstWord, String line)
+    {
+        String conditionString = line.split(firstWord)[1].strip();
+        ConditionTypes type;
+        String leftString, rightString;
+        if (conditionString.contains("==")) {
+            type = ConditionTypes.EQ;
+            leftString = conditionString.split("==")[0].strip();
+            rightString = conditionString.split("==")[1].strip();
+        }
+        else if (conditionString.contains("!=")) {
+            type = ConditionTypes.NE;
+            leftString = conditionString.split("!=")[0].strip();
+            rightString = conditionString.split("!=")[1].strip();
+        }
+        else if (conditionString.contains(">=")) {
+            type = ConditionTypes.GE;
+            leftString = conditionString.split(">=")[0].strip();
+            rightString = conditionString.split(">=")[1].strip();
+        }
+        else if (conditionString.contains("<=")) {
+            type = ConditionTypes.LE;
+            leftString = conditionString.split("<=")[0].strip();
+            rightString = conditionString.split("<=")[1].strip();
+        }
+        else if (conditionString.contains(">")) {
+            type = ConditionTypes.GT;
+            leftString = conditionString.split(">")[0].strip();
+            rightString = conditionString.split(">")[1].strip();
+        }
+        else {
+            type = ConditionTypes.LT;
+            leftString = conditionString.split("<")[0].strip();
+            rightString = conditionString.split("<")[1].strip();
+        }
+
+        return _knownContainerCommands.get(firstWord).apply(
+            new ConditionalCommand(
+                type,
+                new ArithmeticCommand(new ArrayList<>(Arrays.asList(leftString.split(" ")))),
+                new ArithmeticCommand(new ArrayList<>(Arrays.asList(rightString.split(" "))))
+            )
+        );
+    }
+
     public ArrayList<ICommand> GetCommands()
+    {
+        ArrayList<String> lines = (ArrayList<String>) _lines.clone();
+        return GetCommandsRecursive(lines);
+    }
+
+    private ArrayList<ICommand> GetCommandsRecursive(ArrayList<String> lines)
     {
         ArrayList<ICommand> commands = new ArrayList<>();
         int currentLine = 0;
         String[] currentSplittedLine;
         String currentFirstWord;
 
-        while (currentLine < _lines.length)
+        while (lines.size() > 0 && !lines.get(0).equals("}"))
         {
-            currentSplittedLine = _lines[currentLine].split(" ");
+            currentSplittedLine = lines.get(currentLine).strip().split(" ");
             currentFirstWord = currentSplittedLine[0];
             ICommand command;
 
             if (_knownExecutableCommands.keySet().contains(currentFirstWord))
             {
                 commands.add(GetExecutableCommand(currentSplittedLine));
-                currentLine++;
+                lines.remove(0);
             }
-            else if (_knownConditionalCommands.contains(currentFirstWord))
+            else if (_knownContainerCommands.keySet().contains(currentFirstWord))
             {
-                currentLine++;
+                ContainerCommand containerCommand = GetContainerCommand(currentFirstWord, lines.get(currentLine));
+                lines.remove(0);
+                ArrayList<ICommand> internalCommands = GetCommandsRecursive(lines);
+                internalCommands.forEach((internalCommand) -> containerCommand.AddCommand(internalCommand));
+                commands.add(containerCommand);
+                lines.remove(0);
             }
             else
             {
                 commands.add(GetPlacementCommand(currentSplittedLine));
-                currentLine++;
+                lines.remove(0);
             }
         }
 
