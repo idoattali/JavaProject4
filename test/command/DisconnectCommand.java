@@ -7,16 +7,17 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.concurrent.locks.Lock;
 
-public class WhileCommand extends ContainerCommand{
-    public WhileCommand(ConditionalCommand condition) {
-        super(condition);
+public class DisconnectCommand extends ExecutableCommand{
+    public DisconnectCommand(ArrayList<String> arguments) {
+        super(arguments);
     }
 
     @Override
     public double Execute(HashMap<String, Double> sharedMemory, HashMap<String, String> sharedBind, ArrayList<DataServer> dataServers, ArrayList<Client> clients, Lock lock) {
-        while (_condition.Execute(sharedMemory, sharedBind, dataServers, clients, lock) == 1)
+        if (clients.size() > 0)
         {
-            _commands.forEach(command -> command.Execute(sharedMemory, sharedBind, dataServers, clients, lock));
+            Client client = clients.get(0);
+            client.Disconnect();
         }
         return 0;
     }

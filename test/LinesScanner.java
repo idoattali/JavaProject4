@@ -14,14 +14,19 @@ public class LinesScanner {
     private void InitializeKnownExecutableCommands()
     {
         _knownExecutableCommands = new HashMap<>();
-        _knownExecutableCommands.put("connect", (args) -> new Connect(args));
+        _knownExecutableCommands.put("connect", (args) -> new ConnectCommand(args));
         _knownExecutableCommands.put("openDataServer", (args) -> new OpenDataServer(args));
+        _knownExecutableCommands.put("return", (args) -> new ReturnCommand(args));
+        _knownExecutableCommands.put("disconnect", (args) -> new DisconnectCommand(args));
     }
 
     private void InitializeKnownPlacementCommands()
     {
         _knownPlacementCommands = new HashMap<>();
-        _knownPlacementCommands.put("bind", (args) -> new BindCommand(args));
+        _knownPlacementCommands.put(
+                "bind",
+                (args) -> new BindCommand(args)
+        );
     }
 
     private void InitializeKnownConditionalCommands()
@@ -51,11 +56,12 @@ public class LinesScanner {
         return func.apply(arguments);
     }
 
-    private ExecutableCommand GetPlacementExecutableCommand(ArrayList<String> commandArgs)
+    private ExecutableCommand GetPlacementExecutableCommand(String assignedTo, ArrayList<String> commandArgs)
     {
         if (_knownPlacementCommands.keySet().contains(commandArgs.get(0)))
         {
             String commandType = commandArgs.remove(0);
+            commandArgs.add(0, assignedTo);
             return _knownPlacementCommands.get(commandType).apply(commandArgs);
         }
         return new ArithmeticCommand(commandArgs);
@@ -64,17 +70,30 @@ public class LinesScanner {
     private ICommand GetPlacementCommand(String[] splittedLine)
     {
         String firstWord = splittedLine[0];
+        ArrayList<String> internalPlacementData = new ArrayList<>();
         ArrayList<String> internalCommandData = new ArrayList<>();
 
-        String assignedTo = firstWord.equals("var") ? splittedLine[1] : splittedLine[0];
-        int startIndex = firstWord.equals("var") ? 3 : 2;
+        int startIndex = firstWord.equals("var") ? 1 : 0;
 
         for (int i=startIndex; i < splittedLine.length; i++)
         {
-            internalCommandData.add(splittedLine[i]);
+            internalPlacementData.add(splittedLine[i]);
         }
 
-        ExecutableCommand internalCommand = GetPlacementExecutableCommand(internalCommandData);
+        String internalPlacementString = String.join(" ", internalPlacementData);
+        String[] internalPlacementSplitted = internalPlacementString.split("=");
+        String assignedTo = internalPlacementSplitted[0].strip();
+
+        if (internalPlacementSplitted.length > 1)
+        {
+            internalCommandData.addAll(Arrays.asList(internalPlacementSplitted[1].strip().split(" ")));
+        }
+        else
+        {
+            internalCommandData.add("0");
+        }
+
+        ExecutableCommand internalCommand = GetPlacementExecutableCommand(assignedTo, internalCommandData);
         return firstWord.equals("var")
                 ? new NewPlacementCommand(assignedTo, internalCommand)
                 : new ExistsPlacementCommand(assignedTo, internalCommand);
@@ -83,6 +102,7 @@ public class LinesScanner {
     private ContainerCommand GetContainerCommand(String firstWord, String line)
     {
         String conditionString = line.split(firstWord)[1].strip();
+        conditionString = conditionString.split("\\{")[0];
         ConditionTypes type;
         String leftString, rightString;
         if (conditionString.contains("==")) {

@@ -1,6 +1,11 @@
 package test.command;
 
+import test.Client;
+import test.DataServer;
+
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.concurrent.locks.Lock;
 
 public class ConditionalCommand implements ICommand {
 
@@ -16,9 +21,9 @@ public class ConditionalCommand implements ICommand {
     }
 
     @Override
-    public int Execute(HashMap<String, Integer> sharedMemory) {
-        int leftValue = _left.Execute(sharedMemory);
-        int rightValue = _left.Execute(sharedMemory);
+    public double Execute(HashMap<String, Double> sharedMemory, HashMap<String, String> sharedBind, ArrayList<DataServer> dataServers, ArrayList<Client> clients, Lock lock) {
+        double leftValue = _left.Execute(sharedMemory, sharedBind, dataServers, clients, lock);
+        double rightValue = _right.Execute(sharedMemory, sharedBind, dataServers, clients, lock);
         switch(_type) {
             case LT:
                 return leftValue < rightValue ? 1 : 0;

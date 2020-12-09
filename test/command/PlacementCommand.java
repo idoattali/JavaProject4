@@ -1,7 +1,11 @@
 package test.command;
 
+import test.Client;
+import test.DataServer;
+
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.concurrent.locks.Lock;
 
 public abstract class PlacementCommand implements ICommand {
     protected String _assignedTo;
@@ -13,5 +17,5 @@ public abstract class PlacementCommand implements ICommand {
         _executableCommand = executableCommand;
     }
 
-    public abstract int Execute(HashMap<String, Integer> sharedMemory);
+    public abstract double Execute(HashMap<String, Double> sharedMemory, HashMap<String, String> sharedBind, ArrayList<DataServer> dataServers, ArrayList<Client> clients, Lock lock);
 }

@@ -1,7 +1,11 @@
 package test.command;
 
+import test.Client;
+import test.DataServer;
+
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.concurrent.locks.Lock;
 
 public class NewPlacementCommand extends PlacementCommand {
     public NewPlacementCommand(String assignedTo, ExecutableCommand executableCommand) {
@@ -9,9 +13,14 @@ public class NewPlacementCommand extends PlacementCommand {
     }
 
     @Override
-    public int Execute(HashMap<String, Integer> sharedMemory) {
-        int returnedValue = _executableCommand.Execute(sharedMemory);
-        sharedMemory.put(_assignedTo, returnedValue);
+    public double Execute(HashMap<String, Double> sharedMemory, HashMap<String, String> sharedBind, ArrayList<DataServer> dataServers, ArrayList<Client> clients, Lock lock) {
+        lock.lock();
+        try {
+            double returnedValue = _executableCommand.Execute(sharedMemory, sharedBind, dataServers, clients, lock);
+            sharedMemory.put(_assignedTo, returnedValue);
+        } finally {
+            lock.unlock();
+        }
         return 0;
     }
 }

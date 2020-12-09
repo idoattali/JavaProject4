@@ -12,20 +12,6 @@ public class MainTrain {
 		Simulator sim = new Simulator(port); // sim_client on port+1, sim_server on port
 		
 		int rand=r.nextInt(1000);
-
-		String[] test={
-				"connect blb",
-				"openDataServer x y z",
-				"var x = 4",
-				"x = 3",
-				"x = bind maxX",
-				"var y = 3+4/5",
-				"while x+1 < y {",
-				"x = x+1",
-				"}",
-				"y = 5"
-		};
-		MyInterpreter.interpret(test);
 		
 		String[] test1={
 				"return "+rand+" * 5 - (8+2)"	
@@ -68,7 +54,7 @@ public class MainTrain {
 				"disconnect",
 				"return x+y*z"	
 		};
-		
+
 		if(MyInterpreter.interpret(test4)!=sim.simX+sim.simY*sim.simZ)
 			System.out.println("failed test4 (-20)");
 				

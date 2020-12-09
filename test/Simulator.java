@@ -10,11 +10,11 @@ import java.net.SocketTimeoutException;
 import java.util.Random;
 
 public class Simulator {
-	
+
 	double simX,simY,simZ;
 	private int port;
 	private volatile boolean stop;
-	
+
 	public Simulator(int port) {
 		this.port=port;
 		Random r=new Random();
@@ -23,7 +23,7 @@ public class Simulator {
 		new Thread(()->runServer()).start();
 		new Thread(()->runClient()).start();
 	}
-	
+
 	private void runClient(){
 		while(!stop){
 			try {
@@ -41,7 +41,7 @@ public class Simulator {
 			}
 		}
 	}
-	
+
 	private void runServer(){
 		try {
 			ServerSocket server=new ServerSocket(port);
