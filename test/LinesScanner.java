@@ -82,11 +82,11 @@ public class LinesScanner {
 
         String internalPlacementString = String.join(" ", internalPlacementData);
         String[] internalPlacementSplitted = internalPlacementString.split("=");
-        String assignedTo = internalPlacementSplitted[0].strip();
+        String assignedTo = internalPlacementSplitted[0].trim();
 
         if (internalPlacementSplitted.length > 1)
         {
-            internalCommandData.addAll(Arrays.asList(internalPlacementSplitted[1].strip().split(" ")));
+            internalCommandData.addAll(Arrays.asList(internalPlacementSplitted[1].trim().split(" ")));
         }
         else
         {
@@ -101,39 +101,39 @@ public class LinesScanner {
 
     private ContainerCommand GetContainerCommand(String firstWord, String line)
     {
-        String conditionString = line.split(firstWord)[1].strip();
+        String conditionString = line.split(firstWord)[1].trim();
         conditionString = conditionString.split("\\{")[0];
         ConditionTypes type;
         String leftString, rightString;
         if (conditionString.contains("==")) {
             type = ConditionTypes.EQ;
-            leftString = conditionString.split("==")[0].strip();
-            rightString = conditionString.split("==")[1].strip();
+            leftString = conditionString.split("==")[0].trim();
+            rightString = conditionString.split("==")[1].trim();
         }
         else if (conditionString.contains("!=")) {
             type = ConditionTypes.NE;
-            leftString = conditionString.split("!=")[0].strip();
-            rightString = conditionString.split("!=")[1].strip();
+            leftString = conditionString.split("!=")[0].trim();
+            rightString = conditionString.split("!=")[1].trim();
         }
         else if (conditionString.contains(">=")) {
             type = ConditionTypes.GE;
-            leftString = conditionString.split(">=")[0].strip();
-            rightString = conditionString.split(">=")[1].strip();
+            leftString = conditionString.split(">=")[0].trim();
+            rightString = conditionString.split(">=")[1].trim();
         }
         else if (conditionString.contains("<=")) {
             type = ConditionTypes.LE;
-            leftString = conditionString.split("<=")[0].strip();
-            rightString = conditionString.split("<=")[1].strip();
+            leftString = conditionString.split("<=")[0].trim();
+            rightString = conditionString.split("<=")[1].trim();
         }
         else if (conditionString.contains(">")) {
             type = ConditionTypes.GT;
-            leftString = conditionString.split(">")[0].strip();
-            rightString = conditionString.split(">")[1].strip();
+            leftString = conditionString.split(">")[0].trim();
+            rightString = conditionString.split(">")[1].trim();
         }
         else {
             type = ConditionTypes.LT;
-            leftString = conditionString.split("<")[0].strip();
-            rightString = conditionString.split("<")[1].strip();
+            leftString = conditionString.split("<")[0].trim();
+            rightString = conditionString.split("<")[1].trim();
         }
 
         return _knownContainerCommands.get(firstWord).apply(
@@ -160,7 +160,7 @@ public class LinesScanner {
 
         while (lines.size() > 0 && !lines.get(0).equals("}"))
         {
-            currentSplittedLine = lines.get(currentLine).strip().split(" ");
+            currentSplittedLine = lines.get(currentLine).trim().split(" ");
             currentFirstWord = currentSplittedLine[0];
             ICommand command;
 
